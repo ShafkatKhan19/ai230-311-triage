@@ -4,8 +4,8 @@ Two probing modes share one implementation:
   * robin_hood=True  (default) - Robin Hood linear probing with backward-shift deletion
   * robin_hood=False           - plain linear probing with Knuth's deletion (Algorithm R)
 
-Keys are hashed with Python's hash() followed by a Fibonacci-hashing mix step
-(mix=False turns it off, to measure what happens without it).
+Keys are hashed with Python's hash() followed by a mix step: mix="splitmix" (default),
+mix="fibonacci" (first version, kept for comparison) or mix=None (raw hash).
 
 Both modes keep deletion tombstone-free, so lookups never walk over dead slots.
 The table capacity is always a power of two so the home slot is `hash & mask`.
@@ -16,20 +16,36 @@ _MASK64 = (1 << 64) - 1
 _GOLDEN = 0x9E3779B97F4A7C15  # 2^64 / golden ratio (Fibonacci hashing)
 
 
-def _mix(h):
-    """Scramble Python's hash before masking.
+def _mix_fibonacci(h):
+    """First version: multiply by 2^64/phi and fold the high half down.
 
-    hash(int) is the identity, and 311 complaint keys are near-sequential
-    integers, so without mixing they fill one long contiguous run of slots.
-    Multiplying by the golden-ratio constant and folding the high bits down
-    spreads them evenly across the table.
+    hash(int) is the identity and 311 keys are near-sequential, so some mixing
+    is required. This version fixes the sequential case but still leaves visible
+    clustering on the real keys (see bench/probe_quality.py).
     """
     h = (h * _GOLDEN) & _MASK64
     return h ^ (h >> 32)
 
 
+def _mix_splitmix(h):
+    """Final version: the splitmix64 finalizer (two xor-shift-multiply rounds).
+
+    Every output bit depends on every input bit, so the low bits we mask with
+    look random even when the keys have regular gaps.
+    """
+    h &= _MASK64
+    h ^= h >> 30
+    h = (h * 0xBF58476D1CE4E5B9) & _MASK64
+    h ^= h >> 27
+    h = (h * 0x94D049BB133111EB) & _MASK64
+    return h ^ (h >> 31)
+
+
+_MIXERS = {"splitmix": _mix_splitmix, "fibonacci": _mix_fibonacci}
+
+
 class HashTable:
-    def __init__(self, capacity=16, max_load=0.85, robin_hood=True, mix=True):
+    def __init__(self, capacity=16, max_load=0.85, robin_hood=True, mix="splitmix"):
         if not 0.1 <= max_load < 1.0:
             raise ValueError("max_load must be in [0.1, 1.0)")
         cap = 8
@@ -37,7 +53,11 @@ class HashTable:
             cap *= 2
         self._max_load = max_load
         self._robin_hood = robin_hood
-        self._hash = (lambda k: _mix(hash(k))) if mix else hash
+        if mix:
+            m = _MIXERS[mix]
+            self._hash = lambda k: m(hash(k))
+        else:
+            self._hash = hash
         self._init_slots(cap)
         self._size = 0
         self.resizes = 0  # exposed for benchmarks

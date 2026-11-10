@@ -125,8 +125,8 @@ def main():
     small = keys[:12000]
     miss = missing_all[:2000]
     for name, make in [("linear_mixed", lambda: HashTable(2**14, max_load=0.99, robin_hood=False)),
-                       ("linear_unmixed", lambda: HashTable(2**14, max_load=0.99, robin_hood=False, mix=False)),
-                       ("robin_hood_unmixed", lambda: HashTable(2**14, max_load=0.99, mix=False))]:
+                       ("linear_unmixed", lambda: HashTable(2**14, max_load=0.99, robin_hood=False, mix=None)),
+                       ("robin_hood_unmixed", lambda: HashTable(2**14, max_load=0.99, mix=None))]:
         _, ti, th, tm, td = run_ops(make, small, miss, small[:2000])
         rows.append([name, len(small), ti * 1e9, th * 1e9, tm * 1e9, td * 1e9, ""])
         print(f"no-mix test {name:18} insert {ti*1e9:7.0f}ns  hit {th*1e9:6.0f}ns  miss {tm*1e9:9.0f}ns")

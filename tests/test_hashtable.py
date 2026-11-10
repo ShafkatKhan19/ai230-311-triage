@@ -62,7 +62,7 @@ def test_all_keys_collide(rh):
 @pytest.mark.parametrize("rh", MODES)
 def test_wraparound_deletion(rh):
     # Small fixed table so clusters wrap past the end of the array.
-    t = HashTable(capacity=8, max_load=0.85, robin_hood=rh, mix=False)  # raw hash so homes are known
+    t = HashTable(capacity=8, max_load=0.85, robin_hood=rh, mix=None)  # raw hash so homes are known
     for k in [6, 7, 14, 15, 22]:  # homes 6,7,6,7,6 -> cluster wraps to slots 0..
         t[k] = k
     for k in [6, 14, 7]:
@@ -80,11 +80,12 @@ ops = st.lists(
 
 
 @pytest.mark.parametrize("rh", MODES)
-@settings(max_examples=300, deadline=None)
+@pytest.mark.parametrize("mix", ["splitmix", "fibonacci", None])
+@settings(max_examples=200, deadline=None)
 @given(ops=ops)
-def test_matches_dict(rh, ops):
+def test_matches_dict(rh, mix, ops):
     """Random operation sequences must behave exactly like Python's dict."""
-    ours, ref = HashTable(capacity=8, robin_hood=rh), {}
+    ours, ref = HashTable(capacity=8, robin_hood=rh, mix=mix), {}
     for op, k, v in ops:
         if op == "set":
             ours[k] = v

@@ -4,14 +4,21 @@ and the queue of open complaints is our IndexedMinHeap."""
 from .hashtable import HashTable
 from .indexed_heap import IndexedMinHeap
 
-# Urgency weight per complaint type (higher = more urgent). Anything not listed gets 1.
+# Urgency weight per complaint type (higher = more urgent), for the most common
+# types in the Q3 2025 data. Anything not listed gets 1.
 _WEIGHTS = [
-    ("Gas Leak", 10), ("Elevator", 8), ("HEAT/HOT WATER", 8), ("Water System", 7),
-    ("Traffic Signal Condition", 7), ("Street Condition", 5), ("Sewer", 5),
-    ("Electric", 6), ("PLUMBING", 5), ("Blocked Driveway", 3), ("Illegal Parking", 2),
-    ("Noise - Residential", 2), ("Noise - Street/Sidewalk", 2), ("Noise - Commercial", 2),
-    ("Noise - Vehicle", 2), ("UNSANITARY CONDITION", 4), ("Dirty Condition", 2),
-    ("Abandoned Vehicle", 1), ("Graffiti", 1),
+    # life-safety and building systems
+    ("Elevator", 8), ("HEAT/HOT WATER", 8), ("Lead", 7), ("Water System", 7),
+    ("Traffic Signal Condition", 7), ("WATER LEAK", 6), ("ELECTRIC", 6),
+    ("Homeless Person Assistance", 6), ("Damaged Tree", 5), ("Street Condition", 5),
+    ("Sewer", 5), ("PLUMBING", 5), ("Street Light Condition", 4), ("Sidewalk Condition", 4),
+    ("UNSANITARY CONDITION", 4), ("Rodent", 4), ("Encampment", 4), ("Drug Activity", 4),
+    # quality of life
+    ("Blocked Driveway", 3), ("Illegal Fireworks", 3), ("PAINT/PLASTER", 2), ("DOOR/WINDOW", 2),
+    ("Illegal Parking", 2), ("Noise - Residential", 2), ("Noise - Street/Sidewalk", 2),
+    ("Noise - Commercial", 2), ("Noise - Vehicle", 2), ("Noise", 2), ("Dirty Condition", 2),
+    ("Illegal Dumping", 2), ("Missed Collection", 2), ("Abandoned Vehicle", 1),
+    ("Derelict Vehicles", 1), ("Graffiti", 1),
 ]
 TYPE_WEIGHT = HashTable()
 for _t, _w in _WEIGHTS:

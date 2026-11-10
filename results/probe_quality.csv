@@ -1,0 +1,11 @@
+load_factor,mix,n,theory_avg_probe,measured_avg_probe,ratio,max_probe
+0.5,splitmix,262144,0.5,0.502,1.0,8
+0.5,fibonacci,262144,0.5,0.789,1.58,34
+0.6,splitmix,314572,0.75,0.752,1.0,12
+0.6,fibonacci,314572,0.75,1.282,1.71,71
+0.7,splitmix,367001,1.167,1.174,1.01,15
+0.7,fibonacci,367001,1.167,2.259,1.94,113
+0.8,splitmix,419430,2.0,2.006,1.0,25
+0.8,fibonacci,419430,2.0,4.16,2.08,159
+0.9,splitmix,471859,4.5,4.46,0.99,41
+0.9,fibonacci,471859,4.5,8.896,1.98,200

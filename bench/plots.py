@@ -48,3 +48,21 @@ for a in axes:
 fig.tight_layout()
 fig.savefig("results/heap_replay.png", dpi=150)
 print("wrote results/hashtable_loadfactor.png and results/heap_replay.png")
+
+# 3. Mix step quality on real keys vs the uniform-hashing prediction
+if os.path.exists("results/probe_quality.csv"):
+    rows = load("results/probe_quality.csv")
+    fig, ax = plt.subplots(figsize=(6, 4))
+    lfs = sorted({float(x["load_factor"]) for x in rows})
+    theory = [float(next(x for x in rows if float(x["load_factor"]) == lf)["theory_avg_probe"]) for lf in lfs]
+    ax.plot(lfs, theory, "k--", label="theory (uniform hashing)")
+    for mix, style in (("splitmix", "o-"), ("fibonacci", "s-")):
+        r = [x for x in rows if x["mix"] == mix]
+        ax.plot([float(x["load_factor"]) for x in r], [float(x["measured_avg_probe"]) for x in r], style,
+                label=f"{mix} mix (measured)")
+    ax.set(title="Average probe distance on real 311 keys", xlabel="load factor", ylabel="extra probes per lookup")
+    ax.legend()
+    ax.grid(alpha=0.3)
+    fig.tight_layout()
+    fig.savefig("results/probe_quality.png", dpi=150)
+    print("wrote results/probe_quality.png")

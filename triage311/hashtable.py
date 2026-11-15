@@ -45,6 +45,16 @@ _MIXERS = {"splitmix": _mix_splitmix, "fibonacci": _mix_fibonacci}
 
 
 class HashTable:
+    """Map from hashable keys to values.
+
+    Average cost with a good mix step, at load factor a = size / capacity:
+      get / in / set (existing key)   O(1), about 1/2 * (1 + 1/(1 - a)) probes on a hit
+      set (new key)                   O(1) amortized; a resize re-inserts every key
+      delete                          O(1) expected, proportional to the cluster length
+    Worst case for all of them is O(n), when every key lands in one cluster.
+    The table grows by doubling and never shrinks.
+    """
+
     def __init__(self, capacity=16, max_load=0.85, robin_hood=True, mix="splitmix"):
         if not 0.1 <= max_load < 1.0:
             raise ValueError("max_load must be in [0.1, 1.0)")
@@ -53,6 +63,8 @@ class HashTable:
             cap *= 2
         self._max_load = max_load
         self._robin_hood = robin_hood
+        if mix is not None and mix not in _MIXERS:
+            raise ValueError(f"mix must be one of {sorted(_MIXERS)} or None, got {mix!r}")
         if mix:
             m = _MIXERS[mix]
             self._hash = lambda k: m(hash(k))
@@ -206,9 +218,15 @@ class HashTable:
                 i = j
 
     def keys(self):
+        """Keys in slot order (not insertion order). Do not modify the table while iterating."""
         for k in self._keys:
             if k is not _EMPTY:
                 yield k
+
+    def values(self):
+        for k, v in zip(self._keys, self._vals):
+            if k is not _EMPTY:
+                yield v
 
     def items(self):
         for k, v in zip(self._keys, self._vals):
@@ -216,6 +234,10 @@ class HashTable:
                 yield k, v
 
     __iter__ = keys
+
+    def __repr__(self):
+        mode = "robin_hood" if self._robin_hood else "linear"
+        return f"HashTable({self._size} items, capacity {self._cap}, {mode})"
 
     # ------------------------------------------------------------------ diagnostics
     @property

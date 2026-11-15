@@ -9,6 +9,12 @@ from .hashtable import HashTable
 
 
 class IndexedMinHeap:
+    """Min-heap of (key, priority) with O(log n) push, pop, update and remove,
+    O(1) peek and membership test, and O(k log k) smallest(k).
+
+    Priorities only need to support `<`. Keys must be hashable and unique.
+    """
+
     def __init__(self):
         self._heap = []          # list of [priority, key]
         self._pos = HashTable()  # key -> index in self._heap

@@ -1,0 +1,4 @@
+table,n,miss_ns,max_probe
+"linear, splitmix",12000,1259,79
+"linear, no mix",12000,570458,0
+"robin hood, no mix",12000,409,0

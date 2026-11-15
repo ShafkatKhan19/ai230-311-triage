@@ -1,0 +1,23 @@
+﻿922,606 complaints
+hash n=   2,867 avg probe 1.124  hit    810ns  miss    861ns  dict   25ns
+hash n=   5,734 avg probe 1.178  hit    834ns  miss    858ns  dict   25ns
+hash n=  11,468 avg probe 1.187  hit    850ns  miss    893ns  dict   28ns
+hash n=  22,937 avg probe 1.170  hit    923ns  miss    932ns  dict   31ns
+hash n=  45,875 avg probe 1.196  hit   1109ns  miss   1023ns  dict   37ns
+hash n=  91,750 avg probe 1.188  hit   1268ns  miss   1175ns  dict   42ns
+hash n= 183,500 avg probe 1.177  hit   1408ns  miss   1271ns  dict   51ns
+hash n= 367,001 avg probe 1.174  hit   1457ns  miss   1311ns  dict  121ns
+hash n= 734,003 avg probe 1.162  hit   1487ns  miss   1345ns  dict  125ns
+heap n=   4,096 log2 n 12.00  swaps/push  1.26  swaps/pop 10.35  push   6109ns  pop  21890ns
+heap n=   8,192 log2 n 13.00  swaps/push  1.28  swaps/pop 11.34  push   6349ns  pop  24719ns
+heap n=  16,384 log2 n 14.00  swaps/push  1.13  swaps/pop 12.31  push   6313ns  pop  28517ns
+heap n=  32,768 log2 n 15.00  swaps/push  1.06  swaps/pop 13.30  push   9055ns  pop  31051ns
+heap n=  65,536 log2 n 16.00  swaps/push  1.01  swaps/pop 14.29  push   7043ns  pop  34490ns
+heap n= 131,072 log2 n 17.00  swaps/push  0.98  swaps/pop 15.30  push   7755ns  pop  37734ns
+heap n= 262,144 log2 n 18.00  swaps/push  0.97  swaps/pop 16.28  push   7965ns  pop  41275ns
+heap n= 524,288 log2 n 19.00  swaps/push  0.93  swaps/pop 17.28  push   8506ns  pop  45145ns
+heap n= 922,606 log2 n 19.82  swaps/push  1.03  swaps/pop 18.09  push   9133ns  pop  47061ns
+sequential keys, linear, splitmix   miss       1259ns  max probe 79
+sequential keys, linear, no mix     miss     570458ns  max probe 0
+sequential keys, robin hood, no mix miss        409ns  max probe 0
+wrote results/scaling_*.csv, results/unmixed_sequential.csv, results/scaling.png

@@ -35,7 +35,12 @@ def main(argv=None):
     print(f"Loaded {len(eng.records):,} complaints in {time.perf_counter() - t0:.1f}s "
           f"(hash table capacity {eng.records.capacity:,}, load {eng.records.load_factor:.2f})")
 
-    at = datetime.strptime(args.at, "%Y-%m-%d %H:%M") if args.at else latest
+    if latest is None:
+        raise SystemExit(f"No complaints could be read from {args.csv}")
+    try:
+        at = datetime.strptime(args.at, "%Y-%m-%d %H:%M") if args.at else latest
+    except ValueError:
+        raise SystemExit('--at must look like "2025-08-15 18:00"')
     t0 = time.perf_counter()
     pushes, removes = eng.replay(at)
     print(f"Replayed to {at:%Y-%m-%d %H:%M}: {pushes:,} opened, {removes:,} closed, "
@@ -49,6 +54,9 @@ def main(argv=None):
         if not line:
             continue
         cmd, *rest = line.split()
+        if cmd in ("lookup", "escalate", "close", "count") and not rest:
+            print(f"usage: {cmd} needs an argument (type help)")
+            continue
         try:
             t0 = time.perf_counter()
             if cmd in ("quit", "exit", "q"):

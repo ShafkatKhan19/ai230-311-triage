@@ -43,10 +43,15 @@ class TriageEngine:
     # ------------------------------------------------------------------ ingest
     def add(self, rec):
         key = rec["key"]
+        if key in self.records:
+            # The same complaint can appear twice in an export (API paging, re-downloads).
+            # Keep the first copy so the (ZIP, type) counts are not inflated.
+            return False
         self.records[key] = rec
         self.weight[key] = TYPE_WEIGHT.get(rec["type"], 1)
         ck = (rec["zip"], rec["type"])
         self.counts[ck] = self.counts.get(ck, 0) + 1
+        return True
 
     def replay(self, until):
         """Rebuild the open queue as of time `until`: a complaint is open if it was
@@ -84,6 +89,8 @@ class TriageEngine:
         self.queue.update(key, self._priority(key))
 
     def close(self, key):
+        if key not in self.queue:
+            raise KeyError(f"{key} is not an open complaint")
         self.queue.remove(key)
 
     def count(self, zip_code, complaint_type):

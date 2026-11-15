@@ -22,7 +22,7 @@ Backup if the big file is slow or missing (loads in 3 seconds):
 | Step | Type this | What to say |
 |---|---|---|
 | 1 | (startup lines) | "922,606 real NYC 311 complaints from Q3 2025 are now in my hash table. It replayed 463k openings and 402k closures in time order, so the heap holds the 61,078 complaints open on Aug 15 at 6 pm." |
-| 2 | In a second terminal: `.venv\Scripts\python.exe -m pytest -q` | "19 tests. The property tests run random operation sequences against dict and heapq." |
+| 2 | In a second terminal: `.venv\Scripts\python.exe -m pytest -q` | "51 tests. The property tests run random operation sequences against dict and heapq, and a mutation check confirms the tests fail when I break the code." |
 | 3 | `next 10` | "The 10 most urgent open complaints. Weight first, then oldest. This does not pop anything: it walks the heap from the root with a small second heap, O(k log k)." |
 | 4 | `escalate <ID of #10>` | "This complaint escalates. Its weight goes from 8 to 11." |
 | 5 | `next 3` | "It is now #1. That was one update: the position map found its index in O(1), then sift-up in O(log n). heapq cannot do this." |
@@ -31,7 +31,7 @@ Backup if the big file is slow or missing (loads in 3 seconds):
 | 8 | `lookup 999` | "A missing key. Robin Hood stops as soon as it meets an entry closer to home than the search." |
 | 9 | `count 11201 Noise - Residential` | "Counts use a tuple key, (ZIP, type), in the same hash table. 1,178 for Downtown Brooklyn." |
 | 10 | `stats` | "Average probe distance about 0.4 at load 0.44. The formula for linear probing predicts 0.39." |
-| 11 | open `results/probe_quality.png` and `results/heap_replay.png` | "Two findings: my first mix step was 2x worse than theory on real keys, splitmix64 fixed it. And heapq is faster, but its array grows to 52x the size of mine under updates." |
+| 11 | open `results/probe_quality.png`, `results/heap_replay.png` and `results/scaling.png` | "Two findings: my first mix step was 2x worse than theory on real keys, splitmix64 fixed it. And heapq is faster, but its array grows to 52x the size of mine under updates." |
 
 ## Questions to expect
 
@@ -61,6 +61,15 @@ Probe lengths are still short there with Robin Hood (about 3 on average), but de
 
 **Why a heap and not a balanced tree?**
 The system needs min, update and delete, never ordered range queries. A heap does those with a flat array and far less code.
+
+**How do you know it is really O(1) and O(log n)?**
+`bench/scaling.py`. At a fixed load of 0.7 the probe count stays at about 1.17 from 2,867 keys to 734,003 keys. Heap pops take log2(n) minus about 1.7 swaps at every size, counted, not timed. Pushes average about one swap, because most new entries stop near the bottom.
+
+**Then why does lookup time still rise with n?**
+Same number of probes, but each one is slower: the arrays of a million-slot table are about 32 MB, bigger than the 12 MB L3 cache, and probes land at random addresses. I did not measure cache misses, so that is the likely cause, not a proven one.
+
+**How do you know your tests are any good?**
+`scripts/mutation_check.py` breaks 16 lines one at a time. The first run missed one: `remove()` without the sift-up. I added a seven-entry heap test that forces that case; now all 16 are caught.
 
 **What did AI write?**
 It helped draft code, tests and the report. I reviewed and ran everything, and the disclosure is in the report and commit messages. (Be ready to walk through any function line by line.)

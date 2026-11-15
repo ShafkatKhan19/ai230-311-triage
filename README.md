@@ -1,5 +1,7 @@
 # 311 Triage Engine — AI 230 Project 2: Data Structures in Practice
 
+[![tests](https://github.com/ShafkatKhan19/ai230-311-triage/actions/workflows/tests.yml/badge.svg)](https://github.com/ShafkatKhan19/ai230-311-triage/actions/workflows/tests.yml)
+
 A hash table and an indexed priority queue built from scratch, applied to NYC 311 service requests.
 The engine stores every complaint, answers lookups and per-ZIP counts, and keeps all open
 complaints ordered by urgency. When a complaint escalates or closes, it is updated or removed in O(log n).
@@ -13,8 +15,9 @@ complaints ordered by urgency. When a complaint escalates or closes, it is updat
 | `triage311/engine.py` | Triage engine: records, (ZIP, type) counts, urgency weights, open-complaint queue, timeline replay. |
 | `triage311/data.py` | Loader for both 311 CSV formats (website export and SODA API). |
 | `triage311/cli.py` | Live demo. |
-| `tests/` | pytest unit tests plus hypothesis property tests that check against `dict` and `heapq`. |
-| `bench/` | Benchmarks vs built-ins, probe-length check vs theory, plots. `bench/run_all.ps1` runs everything. |
+| `tests/` | 51 tests: unit and edge cases, hypothesis property tests against `dict` and `heapq`, engine/loader/CLI tests. 98% line coverage. |
+| `scripts/mutation_check.py` | Breaks 16 lines one at a time and checks the tests notice (16 of 16 caught). |
+| `bench/` | Benchmarks vs built-ins, probe-length check vs theory, growth with n (`scaling.py`), plots. `bench/run_all.ps1` runs everything. |
 | `results/` | Raw CSVs, logs and plots from the real-data run. |
 | `report/` | Written report (docx and pdf). |
 
@@ -23,7 +26,8 @@ complaints ordered by urgency. When a complaint escalates or closes, it is updat
 ```bash
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python -m pytest -q
+python -m pytest -q --cov=triage311     # 51 tests
+python scripts/mutation_check.py        # optional, about a minute
 ```
 
 ## Get the data (NYC Open Data, dataset erm2-nwe9)
@@ -47,7 +51,7 @@ The website export from https://data.cityofnewyork.us/Social-Services/311-Servic
 python -m triage311.cli data/311_2025q3.csv --at "2025-08-15 18:00"
 #   next 10 | lookup <id> | escalate <id> | close <id> | count 11201 HEAT/HOT WATER | stats | quit
 
-powershell -ExecutionPolicy Bypass -File bench\run_all.ps1   # all benchmarks + plots, about 25 min
+powershell -ExecutionPolicy Bypass -File bench\run_all.ps1   # all benchmarks + plots, about 30 min
 ```
 
 ## Key results (922,606 real complaints, Q3 2025)
@@ -56,6 +60,7 @@ powershell -ExecutionPolicy Bypass -File bench\run_all.ps1   # all benchmarks + 
 - At load 0.9, Robin Hood misses are 5x faster than plain linear probing, and the worst case is 41 vs 833 slots.
 - dict is about 27x faster on lookups (C vs Python); both are O(1).
 - heapq with lazy deletion is 3.3-9.6x faster, but its array grows to 52x the size of the indexed heap at 4 escalations per complaint.
+- Growth with n: at load 0.7 the probe count stays at 1.12-1.20 from 2,867 to 734,003 keys (theory 1.17), while time per lookup rises 1.8x as the table outgrows the CPU cache. Heap pops take log2(n) - 1.7 swaps at every size; pushes average about one swap.
 
 Full analysis: `report/AI230_Project2_Report_Shafkat.pdf`.
 

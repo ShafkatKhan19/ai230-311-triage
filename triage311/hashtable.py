@@ -83,9 +83,6 @@ class HashTable:
         self._hashes = [0] * cap
         self._dist = [0] * cap  # probe distance from home slot
 
-    def _home(self, h):
-        return h & self._mask
-
     def _find_slot(self, key, h):
         """Return the slot index holding `key`, or -1 if absent."""
         keys, hashes, dist, mask = self._keys, self._hashes, self._dist, self._mask
